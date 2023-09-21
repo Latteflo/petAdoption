@@ -1,1 +1,1 @@
-web: gunicorn PetAdoption.wsgi
+web: gunicorn petadopt.wsgi
