@@ -4,9 +4,10 @@ from . import views
 
 router = DefaultRouter()
 router.register(r'pets', views.PetViewSet)
+router.register(r'comments', views.CommentViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
- path('register/', views.register, name='register'),
+    path('register/', views.register, name='register'),
     path('login/', views.login, name='login'),
 ]
