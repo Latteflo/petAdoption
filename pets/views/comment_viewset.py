@@ -3,9 +3,9 @@ from rest_framework.response import Response
 from ..models import Comment
 from ..serializers import CommentSerializer
 from rest_framework.decorators import authentication_classes
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.authentication import SessionAuthentication
 
-@authentication_classes([JWTAuthentication])
+@authentication_classes([SessionAuthentication])
 class CommentViewSet(viewsets.ModelViewSet):
     
     queryset = Comment.objects.all()
