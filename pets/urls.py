@@ -1,6 +1,6 @@
 from rest_framework_nested import routers
 from django.urls import path, include
-#from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from pets.views.user_viewset import  UserViewSet
 from pets.views.shelter_viewset import ShelterViewSet
 from pets.views.pet_viewset import PetViewSet
@@ -30,8 +30,8 @@ shelters_router.register(r'pets', PetViewSet)
 
 urlpatterns = [
     # JWT token routes
-    #path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    #path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     # Existing routes
     path('', include(router.urls)),

@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 from ..models import Comment, Like, Pet, Shelter
 from ..serializers import UserSerializer, CommentSerializer, LikeSerializer, PetSerializer, ShelterSerializer
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth import authenticate
-from rest_framework.authentication import SessionAuthentication
 
 class UserViewSet(viewsets.GenericViewSet):
     queryset = User.objects.all()

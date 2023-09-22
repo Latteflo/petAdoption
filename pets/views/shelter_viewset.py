@@ -4,10 +4,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from ..models import Shelter, Comment, Like, Pet, Tag
 from ..serializers import ShelterSerializer, CommentSerializer, LikeSerializer, PetSerializer, TagSerializer
-from rest_framework.authentication import SessionAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
-@authentication_classes([SessionAuthentication])
+@authentication_classes([JWTAuthentication])
 class ShelterViewSet(viewsets.ModelViewSet):
     
     queryset = Shelter.objects.all()
