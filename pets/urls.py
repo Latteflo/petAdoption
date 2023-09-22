@@ -18,6 +18,10 @@ router.register(r'users', UserViewSet, basename='user')
 
 # Nested routes for users
 users_router = routers.NestedSimpleRouter(router, r'users', lookup='user')
+users_router.register(r'comments', CommentViewSet, basename='comment')
+users_router.register(r'likes', LikeViewSet, basename='like')
+users_router.register(r'pets', PetViewSet, basename='pet')
+
 
 # Nested routes for pets
 pets_router = routers.NestedSimpleRouter(router, r'pets', lookup='pet')
