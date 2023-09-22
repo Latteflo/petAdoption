@@ -3,9 +3,9 @@ from rest_framework.response import Response
 from ..models import Pet_Tag
 from ..serializers import PetTagSerializer
 from rest_framework.decorators import authentication_classes
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.authentication import SessionAuthentication
 
-@authentication_classes([JWTAuthentication])
+@authentication_classes([SessionAuthentication])
 class PetTagViewSet(viewsets.ModelViewSet):
     
     queryset = Pet_Tag.objects.all()

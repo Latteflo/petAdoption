@@ -3,9 +3,9 @@ from rest_framework.response import Response
 from ..models import Like
 from ..serializers import LikeSerializer
 from rest_framework.decorators import authentication_classes
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.authentication import SessionAuthentication
 
-@authentication_classes([JWTAuthentication])
+@authentication_classes([SessionAuthentication])
 class LikeViewSet(viewsets.ModelViewSet):
     
     queryset = Like.objects.all()
