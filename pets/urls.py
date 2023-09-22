@@ -16,6 +16,8 @@ router.register(r'pets', PetViewSet, basename='pet')
 router.register(r'shelters', ShelterViewSet, basename='shelter')
 router.register(r'users', UserViewSet, basename='user')
 
+# Nested routes for users
+users_router = routers.NestedSimpleRouter(router, r'users', lookup='user')
 
 # Nested routes for pets
 pets_router = routers.NestedSimpleRouter(router, r'pets', lookup='pet')
@@ -37,4 +39,5 @@ urlpatterns = [
     path('', include(router.urls)),
     path('', include(pets_router.urls)),
     path('', include(shelters_router.urls)),
-]
+    path('', include(users_router.urls)),
+    ]
