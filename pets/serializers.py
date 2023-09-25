@@ -1,12 +1,23 @@
 from rest_framework import serializers
-from .models import Shelter, Pet, Comment, Like, Tag, Pet_Tag
+from .models import Shelter, Pet, Comment, Like, Tag, Pet_Tag, UserProfile
 from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
+    location = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'password', 'id', 'user_permissions', "location", "image")   
+        fields = ('username', 'first_name', 'last_name', 'email', 'password', 'id', 'user_permissions', 'location', 'image')
         extra_kwargs = {'password': {'write_only': True}}
+
+    def get_location(self, obj):
+        profile = UserProfile.objects.get(user=obj)
+        return profile.location
+
+    def get_image(self, obj):
+        profile = UserProfile.objects.get(user=obj)
+        return profile.image.url if profile.image else None
 
     def create(self, validated_data):
         user = User.objects.create(
@@ -17,6 +28,10 @@ class UserSerializer(serializers.ModelSerializer):
         )
         user.set_password(validated_data['password'])
         user.save()
+        UserProfile.objects.update_or_create(user=user, defaults={
+            'location': validated_data.get('location', ''),
+            'image': validated_data.get('image', '')
+        })
         return user
 
 class ShelterSerializer(serializers.ModelSerializer):

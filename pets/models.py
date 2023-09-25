@@ -2,6 +2,12 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='user_images/')
+    location = models.CharField(max_length=100)
+    
 # Shelter Information Table      
 class Shelter(models.Model):
     img = models.CharField(max_length=255, null=True, blank=True, default='default_shelter.jpg')
@@ -27,6 +33,7 @@ class Pet(models.Model):
     shelter = models.ForeignKey(Shelter, related_name='pets', on_delete=models.CASCADE, null=True, blank=True)
     date_posted = models.DateField(auto_now_add=True, null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
+    tags = models.ManyToManyField('Tag', through='Pet_Tag', related_name='pets')
 
 # Comments on Pet Table
 class Comment(models.Model):

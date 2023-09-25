@@ -2,10 +2,9 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from ..models import Shelter, Comment, Like, Pet, Tag
-from ..serializers import ShelterSerializer, CommentSerializer, LikeSerializer, PetSerializer, TagSerializer
+from ..models import Shelter, Comment, Like, Pet
+from ..serializers import ShelterSerializer, CommentSerializer, LikeSerializer, PetSerializer
 from rest_framework.authentication import SessionAuthentication
-
 
 @authentication_classes([SessionAuthentication])
 class ShelterViewSet(viewsets.ModelViewSet):
@@ -100,20 +99,6 @@ class ShelterViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         elif request.method == 'POST':
             serializer = LikeSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(shelter_id=pk)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    # Custom action for Shelter's Tags
-    @action(detail=True, methods=['GET', 'POST'], permission_classes=[IsAuthenticated])
-    def tags(self, request, pk=None):
-        if request.method == 'GET':
-            tags = Tag.objects.filter(shelter=pk)
-            serializer = TagSerializer(tags, many=True)
-            return Response(serializer.data)
-        elif request.method == 'POST':
-            serializer = TagSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save(shelter_id=pk)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
