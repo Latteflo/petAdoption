@@ -4,4 +4,6 @@ venv/
 db.sqlite3
 runtime.txt
 requirements.txt
-
+myenv/
+staticfiles/
+```
