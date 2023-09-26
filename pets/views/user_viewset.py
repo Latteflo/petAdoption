@@ -3,83 +3,98 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from ..models import Comment, Like, Pet, Shelter
+from ..models import Comment, Like, Pet, Shelter , UserProfile
 from ..serializers import UserSerializer, CommentSerializer, LikeSerializer, PetSerializer, ShelterSerializer
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
-    
-class UserViewSet(viewsets.GenericViewSet):
+from rest_framework.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
+
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
     # Custom action for User's Registration
     @action(detail=False, methods=['POST'], url_path='register')
     def register(self, request):
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            username = serializer.validated_data['username']
-            email = serializer.validated_data['email']
-         
-            if User.objects.filter(username=username).exists():
-               return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
-                
-            if User.objects.filter(email=email).exists():
-                return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
-           
-            user = User.objects.create_user(
-                username=serializer.validated_data['username'],
-                last_name=serializer.validated_data['last_name'],
-                first_name=serializer.validated_data['first_name'],
-                location=serializer.validated_data['location'],
-                password=serializer.validated_data['password'],
-                email=serializer.validated_data['email']
-            )
-            token = Token.objects.create(user=user)
-            return Response({'token': token.key}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+      serializer = UserSerializer(data=request.data)
+      if serializer.is_valid():
+        username = serializer.validated_data['username']
+        email = serializer.validated_data['email']
+
+        # Check if username or email already exists
+        if User.objects.filter(username=username).exists():
+            return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(email=email).exists():
+            return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create User
+        user = User.objects.create_user(
+            username=serializer.validated_data['username'],
+            last_name=serializer.validated_data['last_name'],
+            first_name=serializer.validated_data['first_name'],
+            email=serializer.validated_data['email']
+        )
+        user.set_password(serializer.validated_data['password'])
+        user.save()
+
+        # Create or Update UserProfile
+        UserProfile.objects.update_or_create(user=user, defaults={
+            'location': serializer.validated_data.get('location', ''),
+            'image': serializer.validated_data.get('image', '')
+        })
+
+        # Create Token
+        token = Token.objects.create(user=user)
+
+        return Response({'token': token.key}, status=status.HTTP_201_CREATED)
+      return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     @action(detail=False, methods=['POST'], url_path='login')
     def login(self, request):
         username = request.data.get('username')
         email = request.data.get('email')
         password = request.data.get('password')
-        
-        user_model = get_user_model()
-        
-        # If email is provided, try to find the user by email
-        if email:
-            try:
-                user = user_model.objects.get(email=email)
-                username = user.username
-            except user_model.DoesNotExist:
-                return Response({'error': 'Email does not exist'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # If username is provided, try to find the user by username
-        if username: 
-            try:
-                user = user_model.objects.get(username=username)
-            except user_model.DoesNotExist:
-                return Response({'error': 'Username does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({'error': 'Username not provided'}, status=status.HTTP_400_BAD_REQUEST)
+        # Validate that either username or email is provided
+        if not username and not email:
+            return Response({'error': 'Either username or email must be provided'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = authenticate(username=username, email=email, password=password)
+        # Attempt to retrieve the user
+        try:
+            user = User.objects.get(username=username) if username else User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'Username or email does not exist'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if user:
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key}, status=status.HTTP_200_OK)
+        # Authenticate the user
+        user = authenticate(username=user.username, password=password)
+        if not user:
+            return Response({'error': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({'error': 'Invalid username/email or password'}, status=status.HTTP_400_BAD_REQUEST)
+        # Retrieve or create token
+        token, _ = Token.objects.get_or_create(user=user)
+
+        return Response({'token': token.key}, status=status.HTTP_200_OK)
+
+
+    #Get all users
+    @action(detail=False, methods=['GET'])
+    def all(self, request):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
     
-  # Custom action for User's Comments
+    # Custom action for User's Comments
     @action(detail=True, methods=['GET', 'POST'], permission_classes=[IsAuthenticated])
     def comments(self, request, pk=None):
         if request.user.id != int(pk):
             return Response({'detail': 'You can only view or modify your own comments.'}, status=status.HTTP_403_FORBIDDEN)
+        
         if request.method == 'GET':
             comments = Comment.objects.filter(user=pk)
             serializer = CommentSerializer(comments, many=True)
             return Response(serializer.data)
+        
         elif request.method == 'POST':
             serializer = CommentSerializer(data=request.data)
             if serializer.is_valid():
@@ -157,4 +172,23 @@ class UserViewSet(viewsets.GenericViewSet):
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif request.method == 'DELETE':
+            if request.user.id != int(pk):
+                return Response({'detail': 'You can only delete your own profile.'}, status=status.HTTP_403_FORBIDDEN)
+            
+            user = User.objects.get(pk=pk)
+            user.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def update_user(request, pk):
+        user_instance = get_object_or_404(User, pk=pk)
+        serializer = UserSerializer(user_instance, data=request.data)
+        
+        if serializer.is_valid(raise_exception=True):
+            try:
+                serializer.save()
+            except ValidationError as e:
+                return Response({"username": "A user with that username already exists."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

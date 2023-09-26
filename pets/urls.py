@@ -1,12 +1,12 @@
 from rest_framework_nested import routers
 from django.urls import path, include
-from pets.views.user_viewset import  UserViewSet
 from pets.views.shelter_viewset import ShelterViewSet
 from pets.views.pet_viewset import PetViewSet
 from pets.views.comment_viewset import CommentViewSet
 from pets.views.tag_viewset import TagViewSet
 from pets.views.pet_tag_viewset import PetTagViewSet
 from pets.views.like_viewset import LikeViewSet
+from pets.views.user_viewset import UserViewSet
 
 router = routers.DefaultRouter()
 
@@ -20,7 +20,6 @@ users_router = routers.NestedSimpleRouter(router, r'users', lookup='user')
 users_router.register(r'comments', CommentViewSet, basename='comment')
 users_router.register(r'likes', LikeViewSet, basename='like')
 users_router.register(r'pets', PetViewSet, basename='pet')
-
 
 # Nested routes for pets
 pets_router = routers.NestedSimpleRouter(router, r'pets', lookup='pet')
@@ -36,10 +35,9 @@ shelters_router.register(r'pets', PetViewSet)
 urlpatterns = [
 # Existing routes
     path('', include(router.urls)),
-    path('', include(pets_router.urls)),
-    path('', include(shelters_router.urls)),
-    path('', include(users_router.urls)),
+    path('pets/', include(pets_router.urls)),
+    path('shelters/', include(shelters_router.urls)),
+    path('users/', include(users_router.urls)),
     path('register/', UserViewSet.as_view({'post': 'register'}), name='user-register'),
     path('login/', UserViewSet.as_view({'post': 'login'}), name='user-login'),
-
 ]
