@@ -2,13 +2,18 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from ..models import Tag, Pet_Tag
 from ..serializers import TagSerializer
-from rest_framework.decorators import authentication_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated , AllowAny
 
 class TagViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
     
     def list(self, request, pet_pk=None):
         if pet_pk is not None:

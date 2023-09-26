@@ -4,12 +4,18 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from ..models import Shelter, Comment, Like, Pet
 from ..serializers import ShelterSerializer, CommentSerializer, LikeSerializer, PetSerializer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 class ShelterViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
     queryset = Shelter.objects.all()
     serializer_class = ShelterSerializer
+    
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
     
     def list(self, request):
         shelters = Shelter.objects.all()

@@ -10,8 +10,6 @@ class PetViewSet(viewsets.ModelViewSet):
     serializer_class = PetSerializer
     filterset_fields = ['shelter']
 
-
-
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             permission_classes = [AllowAny]
