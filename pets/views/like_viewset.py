@@ -1,13 +1,13 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from ..models import Like, Pet, User
+from ..models import Like
 from ..serializers import LikeSerializer
 from rest_framework.decorators import authentication_classes
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
 
-@authentication_classes([SessionAuthentication])
+
 class LikeViewSet(viewsets.ModelViewSet):
-    
+    permission_classes = [IsAuthenticated]
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
     

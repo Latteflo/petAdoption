@@ -2,17 +2,23 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from ..models import Pet
 from ..serializers import PetSerializer
-from rest_framework.decorators import authentication_classes, action
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 
-@authentication_classes([SessionAuthentication])
 class PetViewSet(viewsets.ModelViewSet):
-    
     queryset = Pet.objects.all()
     serializer_class = PetSerializer
     filterset_fields = ['shelter']
 
+
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
+    
     def list(self, request):
         pets = Pet.objects.all()
         serializer = PetSerializer(pets, many=True)

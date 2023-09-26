@@ -35,9 +35,9 @@ shelters_router.register(r'pets', PetViewSet)
 urlpatterns = [
 # Existing routes
     path('', include(router.urls)),
-    path('pets/', include(pets_router.urls)),
-    path('shelters/', include(shelters_router.urls)),
-    path('users/', include(users_router.urls)),
+    path('', include(pets_router.urls)),
+    path('', include(shelters_router.urls)),
+    path('', include(users_router.urls)),
     path('register/', UserViewSet.as_view({'post': 'register'}), name='user-register'),
     path('login/', UserViewSet.as_view({'post': 'login'}), name='user-login'),
 ]

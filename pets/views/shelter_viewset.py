@@ -4,11 +4,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from ..models import Shelter, Comment, Like, Pet
 from ..serializers import ShelterSerializer, CommentSerializer, LikeSerializer, PetSerializer
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
 
-@authentication_classes([SessionAuthentication])
 class ShelterViewSet(viewsets.ModelViewSet):
-    
+    permission_classes = [IsAuthenticated]
     queryset = Shelter.objects.all()
     serializer_class = ShelterSerializer
     

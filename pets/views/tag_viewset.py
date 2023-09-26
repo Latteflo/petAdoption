@@ -3,11 +3,10 @@ from rest_framework.response import Response
 from ..models import Tag, Pet_Tag
 from ..serializers import TagSerializer
 from rest_framework.decorators import authentication_classes
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
 
-@authentication_classes([SessionAuthentication])
 class TagViewSet(viewsets.ModelViewSet):
-    
+    permission_classes = [IsAuthenticated]
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     

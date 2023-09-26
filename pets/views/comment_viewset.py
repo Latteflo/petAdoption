@@ -2,12 +2,10 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from ..models import Comment, Pet, User
 from ..serializers import CommentSerializer
-from rest_framework.decorators import authentication_classes
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
 
-@authentication_classes([SessionAuthentication])
 class CommentViewSet(viewsets.ModelViewSet):
-    
+    permission_classes = [IsAuthenticated]
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     
