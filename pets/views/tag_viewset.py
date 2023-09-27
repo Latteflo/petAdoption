@@ -11,7 +11,7 @@ class TagViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'create':
             return [IsAuthenticated()]
-        elif self.action in ['update', 'partial_update', 'destroy']:
+        elif self.action in ['destroy']:
             return [IsAdminUser()]
         else:
             return [AllowAny()]
