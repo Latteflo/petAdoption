@@ -6,23 +6,7 @@ class ShelterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shelter
         fields = '__all__'
-
-class PetSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Pet
-        fields = '__all__'
-        read_only_fields = ('id', 'date_posted')
-
-class CommentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Comment
-        fields = '__all__'
-
-class LikeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Like
-        fields = '__all__'
-
+        
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -31,6 +15,28 @@ class TagSerializer(serializers.ModelSerializer):
 class PetTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pet_Tag
+        fields = '__all__'
+        
+class PetSerializer(serializers.ModelSerializer):
+    tags = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Tag.objects.all()
+    )
+
+    class Meta:
+        model = Pet
+        fields = '__all__'
+        read_only_fields = ('id', 'date_posted')
+
+        
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = '__all__'
+
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
         fields = '__all__'
         
 class UserLikesSerializer(serializers.ModelSerializer):

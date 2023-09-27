@@ -2,18 +2,19 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from ..models import Tag, Pet_Tag
 from ..serializers import TagSerializer
-from rest_framework.permissions import IsAuthenticated , AllowAny
+from rest_framework.permissions import IsAuthenticated , AllowAny , IsAdminUser
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     
     def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            permission_classes = [AllowAny]
+        if self.action == 'create':
+            return [IsAuthenticated()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAdminUser()]
         else:
-            permission_classes = [IsAuthenticated]
-        return [permission() for permission in permission_classes]
+            return [AllowAny()]
     
     def list(self, request, pet_pk=None):
         if pet_pk is not None:

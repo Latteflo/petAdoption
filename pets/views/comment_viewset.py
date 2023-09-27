@@ -2,12 +2,19 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from ..models import Comment, Pet, User
 from ..serializers import CommentSerializer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated , AllowAny , IsAdminUser
 
 class CommentViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAdminUser()]
+        else:
+            return [AllowAny()]
     
     def list(self, request, pet_pk=None, user_pk=None):
       if pet_pk is not None:
@@ -43,42 +50,42 @@ class CommentViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'detail': 'Authentication credentials were not provided.'}, status=status.HTTP_401_UNAUTHORIZED) 
-        
-def retrieve(self, request, pk=None):
-    try:
-        comment = Comment.objects.get(pk=pk)
-    except Comment.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+            
+    def retrieve(self, request, pk=None):
+        try:
+            comment = Comment.objects.get(pk=pk)
+        except Comment.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.user.is_authenticated and comment.user == request.user:
-        serializer = CommentSerializer(comment)
-        return Response(serializer.data)
-    else:
-        return Response({'detail': 'You do not have permission to view this comment.'}, status=status.HTTP_403_FORBIDDEN)
-
-def update(self, request, pk=None):
-    try:
-        comment = Comment.objects.get(pk=pk)
-    except Comment.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    if request.user.is_authenticated and comment.user == request.user:
-        serializer = CommentSerializer(comment, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
+        if request.user.is_authenticated and comment.user == request.user:
+            serializer = CommentSerializer(comment)
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        return Response({'detail': 'You do not have permission to update this comment.'}, status=status.HTTP_403_FORBIDDEN)
+        else:
+            return Response({'detail': 'You do not have permission to view this comment.'}, status=status.HTTP_403_FORBIDDEN)
 
-def destroy(self, request, pk=None):
-    try:
-        comment = Comment.objects.get(pk=pk)
-    except Comment.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    def update(self, request, pk=None):
+        try:
+            comment = Comment.objects.get(pk=pk)
+        except Comment.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.user.is_authenticated and comment.user == request.user:
-        comment.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    else:
-        return Response({'detail': 'You do not have permission to delete this comment.'}, status=status.HTTP_403_FORBIDDEN)
+        if request.user.is_authenticated and comment.user == request.user:
+            serializer = CommentSerializer(comment, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'detail': 'You do not have permission to update this comment.'}, status=status.HTTP_403_FORBIDDEN)
+
+    def destroy(self, request, pk=None):
+        try:
+            comment = Comment.objects.get(pk=pk)
+        except Comment.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if request.user.is_authenticated and comment.user == request.user:
+            comment.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({'detail': 'You do not have permission to delete this comment.'}, status=status.HTTP_403_FORBIDDEN)

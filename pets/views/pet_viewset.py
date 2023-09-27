@@ -1,22 +1,25 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from ..models import Pet
+from ..models import Pet, Tag
 from ..serializers import PetSerializer
-from rest_framework.permissions import IsAuthenticated, AllowAny
-
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework import filters 
 
 class PetViewSet(viewsets.ModelViewSet):
     queryset = Pet.objects.all()
-    serializer_class = PetSerializer
-    filterset_fields = ['shelter']
+    serializer_class = PetSerializer   
+    filter_backends = (filters.BaseFilterBackend,)
+    filterset_fields = ['shelter', 'tags', 'likes', 'user']
+    
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            permission_classes = [AllowAny]
+        if self.action == 'create':
+            return [IsAuthenticated()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAdminUser()]
         else:
-            permission_classes = [IsAuthenticated]
-        return [permission() for permission in permission_classes]
-    
+            return [AllowAny()]
+
     def list(self, request):
         pets = Pet.objects.all()
         serializer = PetSerializer(pets, many=True)
@@ -26,12 +29,21 @@ class PetViewSet(viewsets.ModelViewSet):
         if request.user.is_authenticated:
             serializer = PetSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save()
+                # Save the pet instance and get it back
+                pet = serializer.save()
+                
+                # Add tags (received as list of tag names)
+                tag_names = request.data.get('tags', [])
+                tags = Tag.objects.filter(name__in=tag_names)
+                for tag in tags:
+                    pet.tags.add(tag)
+                
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'detail': 'Authentication credentials were not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
-            
+
+
     def retrieve(self, request, pk=None):
         try:
             pet = Pet.objects.get(pk=pk)
