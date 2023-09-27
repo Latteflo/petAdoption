@@ -7,6 +7,10 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='user_images/')
     location = models.CharField(max_length=100)
+    
+    class Meta:
+        ordering = ['user__username']
+    
     def __str__(self):
         return self.user.username
     
@@ -18,6 +22,9 @@ class Shelter(models.Model):
     description = models.TextField(default='A place for animals to live.')
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False, related_name='shelters', default='1')
     
+    class Meta:
+        ordering = ['name'] 
+        
     def __str__(self):
         return self.name
     
@@ -40,6 +47,9 @@ class Pet(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
     tags = models.ManyToManyField('Tag', through='Pet_Tag', related_name='pets')
     
+    class Meta:
+        ordering = ['id'] 
+        
     def __str__(self):
         return self.name
 
@@ -50,8 +60,13 @@ class Comment(models.Model):
     pet = models.ForeignKey(Pet, on_delete=models.CASCADE, default='3')
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
     
+    class Meta:
+        ordering = ['date_commented'] 
+        
     def __str__(self):
         return self.text
+    
+    
 
 # Likes on Posts Table
 class Like(models.Model):

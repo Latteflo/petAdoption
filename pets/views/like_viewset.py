@@ -2,23 +2,35 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from ..models import Like
 from ..serializers import LikeSerializer
-from rest_framework.permissions import IsAuthenticated , AllowAny, IsAdminUser
-
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 
 class LikeViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for interacting with Likes.
+    
+    - `list`: Lists likes based on authentication and optional pet_pk or user_pk.
+    - `retrieve`: Retrieves a specific like by ID, but only if it belongs to the authenticated user.
+    - `create`: Creates a new like. Requires authentication.
+    - `update`: Updates a specific like. Only the user who created the like can update it.
+    - `destroy`: Deletes a specific like. Only the user who created the like can delete it.
+    """
+    
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
-    
+
     def get_permissions(self):
+        """Assign permissions based on action."""
         if self.action == 'create':
             return [IsAuthenticated()]
         elif self.action in ['update', 'partial_update', 'destroy']:
-            return [IsAdminUser()]
+            return [IsAuthenticated()]  
         else:
             return [AllowAny()]
-    
-    
+        
     def list(self, request, pet_pk=None, user_pk=None):
+        """
+        Add pet_pk or user_pk to filter likes by pet or user.
+        """
         if request.user.is_authenticated:
             if pet_pk is not None:
                 likes = Like.objects.filter(pet_id=pet_pk, user=request.user)
@@ -33,6 +45,9 @@ class LikeViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, pet_pk=None, user_pk=None):
+        """
+        Create a new like. Requires authentication.
+        """
         if request.user.is_authenticated:
             data = request.data.copy()
             data['user'] = request.user.id
@@ -50,6 +65,9 @@ class LikeViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Authentication credentials were not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
 
     def retrieve(self, request, pk=None):
+        """
+        Retrieve a specific like by ID, but only if it belongs to the authenticated user.
+        """
         try:
             like = Like.objects.get(pk=pk)
         except Like.DoesNotExist:
@@ -62,6 +80,9 @@ class LikeViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'You do not have permission to view this like.'}, status=status.HTTP_403_FORBIDDEN)
 
     def update(self, request, pk=None):
+        """
+        Update a specific like. Only the user who created the like can update it.
+        """
         try:
             like = Like.objects.get(pk=pk)
         except Like.DoesNotExist:
@@ -77,6 +98,9 @@ class LikeViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'You do not have permission to update this like.'}, status=status.HTTP_403_FORBIDDEN)
 
     def destroy(self, request, pk=None):
+        """
+        Delete a specific like. Only the user who created the like can delete it.
+        """
         try:
             like = Like.objects.get(pk=pk)
         except Like.DoesNotExist:

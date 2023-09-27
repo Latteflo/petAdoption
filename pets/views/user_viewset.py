@@ -11,12 +11,26 @@ from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 
 class UserViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for managing users.
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return []
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated()]
+        else:
+            return []
     
     # Custom action for User's Registration
     @action(detail=False, methods=['POST'], url_path='register')
     def register(self, request):
+      """
+      Register a new user.
+      """
       serializer = UserSerializer(data=request.data)
       if serializer.is_valid():
         username = serializer.validated_data['username']
@@ -52,6 +66,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['POST'], url_path='login')
     def login(self, request):
+        """
+        Login a user.
+        """
         username = request.data.get('username')
         email = request.data.get('email')
         password = request.data.get('password')
@@ -87,6 +104,9 @@ class UserViewSet(viewsets.ModelViewSet):
     # Custom action for User's Comments
     @action(detail=True, methods=['GET', 'POST'], permission_classes=[IsAuthenticated])
     def comments(self, request, pk=None):
+        """
+        Retrieve or add comments.
+        """
         if request.user.id != int(pk):
             return Response({'detail': 'You can only view or modify your own comments.'}, status=status.HTTP_403_FORBIDDEN)
         
@@ -105,6 +125,9 @@ class UserViewSet(viewsets.ModelViewSet):
     # Custom action for User's Likes
     @action(detail=True, methods=['GET', 'POST'], permission_classes=[IsAuthenticated])
     def likes(self, request, pk=None):
+        """
+        Retrieve or add likes.
+        """
         if request.user.id != int(pk):
             return Response({'detail': 'You can only view or modify your own likes.'}, status=status.HTTP_403_FORBIDDEN)
         if request.method == 'GET':
@@ -121,6 +144,9 @@ class UserViewSet(viewsets.ModelViewSet):
     # Custom action for User's Pets
     @action(detail=True, methods=['GET', 'POST'], permission_classes=[IsAuthenticated])
     def pets(self, request, pk=None):
+        """
+        Retrieve or add pets.
+        """
         if request.method == 'GET':
             pets = Pet.objects.filter(user=pk)
             serializer = PetSerializer(pets, many=True)
@@ -135,6 +161,9 @@ class UserViewSet(viewsets.ModelViewSet):
     # Custom action for User's Shelters
     @action(detail=True, methods=['GET', 'POST'], permission_classes=[IsAuthenticated])
     def shelters(self, request, pk=None):
+        """
+        Retrieve or add shelters.
+        """
         if request.method == 'GET':
             shelters = Shelter.objects.filter(user=pk)
             serializer = ShelterSerializer(shelters, many=True)
@@ -149,6 +178,9 @@ class UserViewSet(viewsets.ModelViewSet):
     # Custom action for User's Profile
     @action(detail=True, methods=['GET', 'PUT'], permission_classes=[IsAuthenticated])
     def profile(self, request, pk=None):
+        """
+        Retrieve or update the profile.
+        """
         if request.method == 'GET':
             try:
                 user = User.objects.get(pk=pk)

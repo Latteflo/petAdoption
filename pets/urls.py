@@ -7,6 +7,8 @@ from pets.views.tag_viewset import TagViewSet
 from pets.views.pet_tag_viewset import PetTagViewSet
 from pets.views.like_viewset import LikeViewSet
 from pets.views.user_viewset import UserViewSet
+from rest_framework.documentation import include_docs_urls
+from rest_framework.schemas import get_schema_view
 
 router = routers.DefaultRouter()
 
@@ -40,4 +42,10 @@ urlpatterns = [
     path('', include(users_router.urls)),
     path('register/', UserViewSet.as_view({'post': 'register'}), name='user-register'),
     path('login/', UserViewSet.as_view({'post': 'login'}), name='user-login'),
+    path('docs/', include_docs_urls(title='PetAdoption API', description='Welcome to the PetAdoption API documentation. This API is designed to facilitate the development of a pet adoption platform that seeks to provide an efficient, streamlined process for connecting prospective pet owners with animal shelters. Our backend is built using a robust stack including PostgreSQL, Python, and Django REST Framework, aiming for high scalability, data integrity, and easy maintainability.')),
+    path('schema/', get_schema_view(
+        title='PetAdoption API',
+        description='API for all things related to pet adoption',
+        version='1.0.0'
+    ), name='openapi-schema'),
 ]

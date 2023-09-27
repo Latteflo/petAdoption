@@ -6,13 +6,38 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework import filters 
 
 class PetViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for managing pets.
+
+    This view provides the following functionalities:
+    - List all pets: GET /pets/
+    - Create a new pet: POST /pets/
+    - Retrieve a pet by ID: GET /pets/{id}/
+    - Update a pet by ID: PUT /pets/{id}/
+    - Partially update a pet by ID: PATCH /pets/{id}/
+    - Delete a pet by ID: DELETE /pets/{id}/
+
+    Query Parameters:
+    - `shelter`: Filter pets by shelter ID
+    - `tags`: Filter pets by tags
+    - `likes`: Filter pets by likes
+    - `user`: Filter pets by user (creator)
+
+    Permission Levels:
+    - Any user can list and retrieve pets.
+    - Only authenticated users can create pets.
+    - Only admin users can update or delete pets.
+    """
     queryset = Pet.objects.all()
     serializer_class = PetSerializer   
     filter_backends = (filters.BaseFilterBackend,)
     filterset_fields = ['shelter', 'tags', 'likes', 'user']
-    
 
     def get_permissions(self):
+        """
+        Determine the permissions that the user has.
+        """ 
+        
         if self.action == 'create':
             return [IsAuthenticated()]
         elif self.action in ['update', 'partial_update', 'destroy']:
@@ -21,11 +46,24 @@ class PetViewSet(viewsets.ModelViewSet):
             return [AllowAny()]
 
     def list(self, request):
+        """
+        List all pets in the database.
+        """
         pets = Pet.objects.all()
         serializer = PetSerializer(pets, many=True)
         return Response(serializer.data)
         
     def create(self, request):
+        """
+        Create a new pet.
+        
+        Required Fields:
+        - name: string
+        - age: integer
+        - breed: string
+        - shelter: Shelter object ID
+        - (Optional) tags: list of tag names
+        """
         if request.user.is_authenticated:
             serializer = PetSerializer(data=request.data)
             if serializer.is_valid():
@@ -45,6 +83,9 @@ class PetViewSet(viewsets.ModelViewSet):
 
 
     def retrieve(self, request, pk=None):
+        """
+        Retrieve a single pet by its ID.
+        """
         try:
             pet = Pet.objects.get(pk=pk)
         except Pet.DoesNotExist:
@@ -53,6 +94,9 @@ class PetViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
         
     def update(self, request, pk=None):
+        """
+        Update an existing pet by its ID.
+        """
         try:
             pet = Pet.objects.get(pk=pk)
         except Pet.DoesNotExist:
@@ -68,6 +112,9 @@ class PetViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Authentication credentials were not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
         
     def destroy(self, request, pk=None):
+        """
+        Delete a pet by its ID.
+        """
         try:
             pet = Pet.objects.get(pk=pk)
         except Pet.DoesNotExist:
@@ -80,6 +127,9 @@ class PetViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Authentication credentials were not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
     
     def get_queryset(self):
+       """
+       Get the list of pets for the current user based on the provided query parameters.
+       """
        queryset = Pet.objects.all()
     
        # Filtering by shelter
