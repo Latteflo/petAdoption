@@ -97,15 +97,17 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Database
 # Manually set up the .env file
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 env_path = os.path.join(BASE_DIR, '.env')
-try:
+
+# Check if .env exists before loading it
+if os.path.exists(env_path):
     with open(env_path) as f:
         for line in f:
             key, value = line.strip().split('=')
             os.environ[key] = value
-except FileNotFoundError:
-    print(f"Warning: {env_path} not found. Skipping loading environment variables from .env file.")
+
     
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
