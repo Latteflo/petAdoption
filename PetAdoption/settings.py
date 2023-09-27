@@ -96,20 +96,29 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Database
-
+# Manually set up the .env file
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+env_path = os.path.join(BASE_DIR, '.env')
+try:
+    with open(env_path) as f:
+        for line in f:
+            key, value = line.strip().split('=')
+            os.environ[key] = value
+except FileNotFoundError:
+    print(f"Warning: {env_path} not found. Skipping loading environment variables from .env file.")
+    
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'd4nfgo7q1tkh36',
-        'USER': 'xdiquskllftoio',
-        'PASSWORD': 'c3d8d3b55765f0aa978116e2c8067f77f8839507f112eb90d2c12de5af396b75',
-        'HOST': 'ec2-54-243-32-226.compute-1.amazonaws.com',
-        'PORT': '5432',
+        'ENGINE': os.getenv('DB_ENGINE'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
-
 # For Heroku deployment
 db_from_env = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(db_from_env)
