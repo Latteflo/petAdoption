@@ -46,7 +46,7 @@ class TagViewSet(viewsets.ModelViewSet):
         serializer = TagSerializer(tag)
         return Response(serializer.data)
 
-    def update(self, request, pk=None):
+    def update(self, request, pk=None, pet_pk=None):
         try:
             tag = Tag.objects.get(pk=pk)
         except Tag.DoesNotExist:
