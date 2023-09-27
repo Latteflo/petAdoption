@@ -25,7 +25,10 @@ class TagViewSet(viewsets.ModelViewSet):
         serializer = TagSerializer(tags, many=True)
         return Response(serializer.data)
 
-    def create(self, request):
+    def create(self, request, pet_pk=None):
+        if pet_pk is None:
+            return Response({'detail': 'Pet ID must be provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
         if request.user.is_authenticated:
             serializer = TagSerializer(data=request.data)
             if serializer.is_valid():
