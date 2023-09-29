@@ -16,6 +16,8 @@ router = routers.DefaultRouter()
 router.register(r'pets', PetViewSet, basename='pet')
 router.register(r'shelters', ShelterViewSet, basename='shelter')
 router.register(r'users', UserViewSet, basename='user')
+router.register(r'tags', TagViewSet, basename='tags')
+router.register(r'pet_tags', PetTagViewSet, basename='pet_tag')
 
 # Nested routes for users
 users_router = routers.NestedSimpleRouter(router, r'users', lookup='user')

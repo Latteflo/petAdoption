@@ -31,7 +31,7 @@ class PetViewSet(viewsets.ModelViewSet):
     queryset = Pet.objects.all()
     serializer_class = PetSerializer   
     filter_backends = (filters.BaseFilterBackend,)
-    filterset_fields = ['shelter', 'tags', 'likes', 'user']
+    filterset_fields = ['shelter', 'tags', 'likes', 'user', 'gender']
 
     def get_permissions(self):
         """
@@ -151,7 +151,12 @@ class PetViewSet(viewsets.ModelViewSet):
        user_id = self.request.query_params.get('user', None)
        if user_id is not None:
           queryset = queryset.filter(user=user_id)
-
+          
+      # Filtering by Gender
+       gender = self.request.query_params.get('gender', None)
+       if gender is not None:
+           queryset = queryset.filter(gender=gender)
+            
        return queryset
 
     
